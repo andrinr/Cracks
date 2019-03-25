@@ -15,15 +15,30 @@ void draw(){
     strokeWeight(3);
   }
   
-  if (random(1) > 0.96){
+  if (random(1) > 0.94){
     int indexPickA = (int)random(lines.size());
     int indexPickB = (int)random(lines.size());
 
-    L pickA = lines.get(indexPickA);
-    L pickB = lines.get(indexPickB);
-    lines.add(new L(pickA.split(),pickB.split()));
+    L lineA = lines.get(indexPickA);
+    L lineB = lines.get(indexPickB);
+    P pointA = lineA.onLine();
+    P pointB = lineB.onLine();
+
+    L newLine = new L(pointA,pointB);
+    boolean conflict = false;
+    for (int i = 0; i< lines.size(); i++){
+       if (newLine.intersect(lines.get(i))){
+         conflict = true;
+         System.out.println("Found conflict with line: " + i);
+       }
+    }
+    if (!conflict){
+      lineA.split(pointA);
+      lineB.split(pointB);
+      lines.add(newLine);
+    }
   }
-  saveFrame("C:/Users/Andrin Rehmann/Documents/Processing/NewRound/cracks/out/04/####.png");
+  //saveFrame("C:/Users/Andrin Rehmann/Documents/Processing/NewRound/cracks/out/04/####.png");
 }
 
 void initialize(){
@@ -69,11 +84,20 @@ class L{
      line(a.x(),a.y(),b.x(),b.y());
    }
    
-   P split(){
+   P onLine(){
      float r = random(1);
-     P middle = new P(a.x + r* (b.x - a.x), a.y + r* (b.y - a.y));
-     lines.add(new L(middle,b));
-     b = middle;
-     return middle;
+     return new P(a.x + r* (b.x - a.x), a.y + r* (b.y - a.y));
+   }
+   
+   void split(P point){
+     lines.add(new L(point,b));
+     b = point;
+   }
+   
+   boolean intersect(L other){
+     return a.x <= other.b.x &&
+          b.x >= other.a.x &&
+          a.y <= other.b.y &&
+          b.y >= other.a.y;
    }
 }
